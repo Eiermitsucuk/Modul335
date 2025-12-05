@@ -1,0 +1,7 @@
+{
+  "name": "smart-activity-logger",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
