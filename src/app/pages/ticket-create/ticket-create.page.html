@@ -1,0 +1,97 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Neues Ticket</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <form>
+    <!-- Titel -->
+    <ion-item>
+      <ion-input 
+        label="Titel" 
+        labelPlacement="floating" 
+        [(ngModel)]="ticket.title" 
+        name="title"
+        required
+        placeholder="z.B. Monitor defekt">
+      </ion-input>
+    </ion-item>
+
+    <!-- Kategorie -->
+    <ion-item>
+      <ion-select 
+        label="Kategorie" 
+        labelPlacement="floating" 
+        [(ngModel)]="ticket.category" 
+        name="category"
+        interface="action-sheet">
+        <ion-select-option [value]="categories.TECHNIK">{{ categories.TECHNIK }}</ion-select-option>
+        <ion-select-option [value]="categories.INFRASTRUKTUR">{{ categories.INFRASTRUKTUR }}</ion-select-option>
+        <ion-select-option [value]="categories.ERGONOMIE">{{ categories.ERGONOMIE }}</ion-select-option>
+        <ion-select-option [value]="categories.SONSTIGES">{{ categories.SONSTIGES }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Beschreibung -->
+    <ion-item>
+      <ion-textarea 
+        label="Beschreibung" 
+        labelPlacement="floating" 
+        [(ngModel)]="ticket.description" 
+        name="description"
+        rows="4"
+        required
+        placeholder="Beschreibe das Problem...">
+      </ion-textarea>
+    </ion-item>
+
+    <!-- Standort -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Standort (optional)</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-input 
+            label="Standort" 
+            labelPlacement="floating" 
+            [(ngModel)]="ticket.location" 
+            name="location"
+            placeholder="z.B. Raum 201 oder GPS-Koordinaten">
+          </ion-input>
+        </ion-item>
+        
+        <div class="location-buttons">
+          <ion-button expand="block" (click)="getGPSLocation()" [disabled]="isGettingLocation">
+            <ion-icon slot="start" name="locate"></ion-icon>
+            {{ isGettingLocation ? 'GPS wird abgerufen...' : 'GPS-Standort abrufen' }}
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="scanQRCode()">
+            <ion-icon slot="start" name="qr-code"></ion-icon>
+            QR-Code scannen
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Absenden Button -->
+    <ion-button 
+      expand="block" 
+      color="primary" 
+      (click)="submitTicket()"
+      [disabled]="!isFormValid() || isSubmitting">
+      <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+      {{ isSubmitting ? 'Wird erstellt...' : 'Ticket erstellen' }}
+    </ion-button>
+
+    <!-- Offline Hinweis -->
+    <ion-note *ngIf="!isOnline" color="warning" class="offline-note">
+      <ion-icon name="warning"></ion-icon>
+      Du bist offline. Das Ticket wird lokal gespeichert und später synchronisiert.
+    </ion-note>
+  </form>
+</ion-content>

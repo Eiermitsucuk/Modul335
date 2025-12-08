@@ -16,7 +16,7 @@
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
+@import '@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
@@ -28,10 +28,111 @@
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
+ * Dark Mode wird manuell über theme.service.ts gesteuert
+ * Die Dark Mode Styles sind in src/theme/variables.scss definiert
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Custom Global Styles */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Light Mode (Standard) */
+body:not(.dark) {
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #000000;
+  --ion-text-color-rgb: 0, 0, 0;
+}
+
+ion-content {
+  --background: var(--ion-background-color);
+}
+
+/* Ensure proper background colors */
+body {
+  background-color: var(--ion-background-color);
+}
+
+ion-app {
+  background: var(--ion-background-color);
+}
+
+/* Card Shadows */
+ion-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  body.dark & {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Smooth transitions */
+ion-button,
+ion-card,
+ion-item {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ion-color-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ion-color-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-dark);
+}
+
+/* App specific styles */
+.ion-text-center {
+  text-align: center;
+}
+
+.ion-margin-top {
+  margin-top: 16px;
+}
+
+.ion-margin-bottom {
+  margin-bottom: 16px;
+}
+
+/* Loading states */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Empty states */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  h2 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1em;
+  }
+}

@@ -1,0 +1,41 @@
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ion-icon {
+    font-size: 1.3em;
+  }
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+
+  ion-item {
+    --background: transparent;
+  }
+}
+
+.stat-value {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.status-open {
+  color: var(--ion-color-danger);
+}
+
+.status-in-progress {
+  color: var(--ion-color-warning);
+}
+
+.status-resolved {
+  color: var(--ion-color-success);
+}
+
+ion-chip {
+  margin: 5px 5px 5px 0;
+}
+

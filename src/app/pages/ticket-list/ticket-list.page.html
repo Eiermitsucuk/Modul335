@@ -1,0 +1,92 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Meine Tickets</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshTickets()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <!-- Segment für Filter -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="filterStatus" (ionChange)="filterTickets()">
+      <ion-segment-button value="all">
+        <ion-label>Alle</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ticketStatus.OFFEN">
+        <ion-label>Offen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ticketStatus.IN_BEARBEITUNG">
+        <ion-label>In Arbeit</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ticketStatus.GELOEST">
+        <ion-label>Gelöst</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Lade Tickets...</p>
+  </div>
+
+  <!-- Offline Hinweis -->
+  <ion-card *ngIf="!isOnline" color="warning">
+    <ion-card-content>
+      <ion-icon name="warning"></ion-icon>
+      Offline-Modus: Zeige lokal gespeicherte Tickets
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Tickets Liste -->
+  <ion-list *ngIf="!isLoading">
+    <!-- Keine Tickets -->
+    <ion-item *ngIf="filteredTickets.length === 0">
+      <ion-label class="ion-text-center">
+        <h2>Keine Tickets gefunden</h2>
+        <p>Erstelle dein erstes Ticket!</p>
+      </ion-label>
+    </ion-item>
+
+    <!-- Ticket Items -->
+    <ion-item-sliding *ngFor="let ticket of filteredTickets">
+      <ion-item [routerLink]="['/ticket-detail', ticket.id]" button detail="true">
+        <ion-icon 
+          [name]="getCategoryIcon(ticket.category)" 
+          [color]="getStatusColor(ticket.status)"
+          slot="start">
+        </ion-icon>
+        <ion-label>
+          <h2>{{ ticket.title }}</h2>
+          <p>{{ ticket.description | slice:0:50 }}{{ ticket.description.length > 50 ? '...' : '' }}</p>
+          <ion-note>
+            <ion-icon name="location"></ion-icon>
+            {{ ticket.location || 'Kein Standort' }} • 
+            {{ ticket.created_at | date:'dd.MM.yyyy HH:mm' }}
+          </ion-note>
+        </ion-label>
+        <ion-badge [color]="getStatusColor(ticket.status)" slot="end">
+          {{ ticket.status }}
+        </ion-badge>
+      </ion-item>
+
+      <!-- Sliding Options -->
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteTicket(ticket)">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- FAB für neues Ticket -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button routerLink="/ticket-create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

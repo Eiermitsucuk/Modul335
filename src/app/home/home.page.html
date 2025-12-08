@@ -1,20 +1,110 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Blank
+      WorkFlow Assist
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="ion-padding">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      <ion-title size="large">WorkFlow Assist</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <div class="welcome-section">
+    <h2>Willkommen!</h2>
+    <p>Erfasse und verwalte Arbeitsplatz-Probleme schnell und einfach.</p>
   </div>
+
+  <!-- Netzwerk Status -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon [name]="isOnline ? 'wifi' : 'wifi-outline'" [color]="isOnline ? 'success' : 'danger'"></ion-icon>
+        Verbindungsstatus
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>
+        <strong>Status:</strong> {{ isOnline ? 'Online' : 'Offline' }}
+      </p>
+      <p *ngIf="networkType">
+        <strong>Verbindungstyp:</strong> {{ networkType }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Statistiken -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="stats-chart"></ion-icon>
+        Ticket-Übersicht
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="4">
+            <div class="stat-box">
+              <h3>{{ stats.total }}</h3>
+              <p>Gesamt</p>
+            </div>
+          </ion-col>
+          <ion-col size="4">
+            <div class="stat-box">
+              <h3 class="status-open">{{ stats.open }}</h3>
+              <p>Offen</p>
+            </div>
+          </ion-col>
+          <ion-col size="4">
+            <div class="stat-box">
+              <h3 class="status-in-progress">{{ stats.inProgress }}</h3>
+              <p>In Arbeit</p>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Quick Actions -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Schnellaktionen</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button expand="block" routerLink="/ticket-create">
+        <ion-icon slot="start" name="add-circle"></ion-icon>
+        Neues Ticket erstellen
+      </ion-button>
+      <ion-button expand="block" fill="outline" routerLink="/ticket-list">
+        <ion-icon slot="start" name="list"></ion-icon>
+        Alle Tickets anzeigen
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Letzte Tickets -->
+  <ion-card *ngIf="recentTickets.length > 0">
+    <ion-card-header>
+      <ion-card-title>Neueste Tickets</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let ticket of recentTickets" [routerLink]="['/ticket-detail', ticket.id]" button>
+          <ion-icon [name]="getCategoryIcon(ticket.category)" slot="start"></ion-icon>
+          <ion-label>
+            <h3>{{ ticket.title }}</h3>
+            <p>{{ ticket.category }} - {{ ticket.status }}</p>
+          </ion-label>
+          <ion-badge [color]="getStatusColor(ticket.status)" slot="end">
+            {{ ticket.status }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

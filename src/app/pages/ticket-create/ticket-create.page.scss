@@ -1,0 +1,29 @@
+form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+ion-item {
+  margin-bottom: 15px;
+}
+
+.location-buttons {
+  ion-button {
+    margin-top: 10px;
+  }
+}
+
+.offline-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 10px;
+  background: var(--ion-color-warning-tint);
+  border-radius: 8px;
+}
+
+ion-button {
+  margin-top: 20px;
+}
+
