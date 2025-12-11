@@ -12,23 +12,29 @@
     <!-- Titel -->
     <ion-item>
       <ion-input 
-        label="Titel" 
+        label="Titel *" 
         labelPlacement="floating" 
         [(ngModel)]="ticket.title" 
         name="title"
         required
+        minlength="3"
+        maxlength="100"
         placeholder="z.B. Monitor defekt">
       </ion-input>
     </ion-item>
+    <ion-note color="danger" *ngIf="ticket.title && ticket.title.length < 3">
+      Mindestens 3 Zeichen erforderlich
+    </ion-note>
 
     <!-- Kategorie -->
     <ion-item>
       <ion-select 
-        label="Kategorie" 
+        label="Kategorie *" 
         labelPlacement="floating" 
         [(ngModel)]="ticket.category" 
         name="category"
-        interface="action-sheet">
+        interface="action-sheet"
+        placeholder="Wähle eine Kategorie">
         <ion-select-option [value]="categories.TECHNIK">{{ categories.TECHNIK }}</ion-select-option>
         <ion-select-option [value]="categories.INFRASTRUKTUR">{{ categories.INFRASTRUKTUR }}</ion-select-option>
         <ion-select-option [value]="categories.ERGONOMIE">{{ categories.ERGONOMIE }}</ion-select-option>
@@ -39,59 +45,71 @@
     <!-- Beschreibung -->
     <ion-item>
       <ion-textarea 
-        label="Beschreibung" 
+        label="Beschreibung *" 
         labelPlacement="floating" 
         [(ngModel)]="ticket.description" 
         name="description"
         rows="4"
         required
-        placeholder="Beschreibe das Problem...">
+        minlength="10"
+        maxlength="500"
+        placeholder="Beschreibe das Problem detailliert...">
       </ion-textarea>
     </ion-item>
+    <ion-note color="medium" *ngIf="ticket.description">
+      {{ ticket.description.length }} / 500 Zeichen
+    </ion-note>
+    <ion-note color="danger" *ngIf="ticket.description && ticket.description.length < 10">
+      Mindestens 10 Zeichen erforderlich
+    </ion-note>
 
     <!-- Standort -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Standort (optional)</ion-card-title>
+        <ion-card-title>Standort *</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item>
           <ion-input 
-            label="Standort" 
+            label="Standort *" 
             labelPlacement="floating" 
             [(ngModel)]="ticket.location" 
             name="location"
-            placeholder="z.B. Raum 201 oder GPS-Koordinaten">
+            placeholder="z.B. Raum 201 oder GPS-Koordinaten"
+            required
+            minlength="2">
           </ion-input>
         </ion-item>
+        <ion-note color="danger" *ngIf="ticket.location && ticket.location.length < 2">
+          Mindestens 2 Zeichen erforderlich
+        </ion-note>
         
         <div class="location-buttons">
-          <ion-button expand="block" (click)="getGPSLocation()" [disabled]="isGettingLocation">
+          <ion-button expand="block" (click)="getGPSLocation()" [disabled]="isGettingLocation" class="custom-primary">
             <ion-icon slot="start" name="locate"></ion-icon>
             {{ isGettingLocation ? 'GPS wird abgerufen...' : 'GPS-Standort abrufen' }}
           </ion-button>
-          <ion-button expand="block" fill="outline" (click)="scanQRCode()">
-            <ion-icon slot="start" name="qr-code"></ion-icon>
-            QR-Code scannen
-          </ion-button>
         </div>
+        <ion-note color="medium">
+          <ion-icon name="information-circle"></ion-icon>
+          Nutze GPS für präzise Koordinaten oder gib manuell ein (z.B. "Raum 201")
+        </ion-note>
       </ion-card-content>
     </ion-card>
+
+    <!-- Pflichtfelder Hinweis -->
+    <ion-note color="medium" class="required-note">
+      * Pflichtfelder
+    </ion-note>
 
     <!-- Absenden Button -->
     <ion-button 
       expand="block" 
-      color="primary" 
+      class="custom-primary"
       (click)="submitTicket()"
       [disabled]="!isFormValid() || isSubmitting">
       <ion-icon slot="start" name="checkmark-circle"></ion-icon>
       {{ isSubmitting ? 'Wird erstellt...' : 'Ticket erstellen' }}
     </ion-button>
-
-    <!-- Offline Hinweis -->
-    <ion-note *ngIf="!isOnline" color="warning" class="offline-note">
-      <ion-icon name="warning"></ion-icon>
-      Du bist offline. Das Ticket wird lokal gespeichert und später synchronisiert.
-    </ion-note>
   </form>
 </ion-content>

@@ -18,7 +18,7 @@ import { Ticket, TicketCategory, TicketStatus } from '../../models/ticket.model'
 import { SupabaseService } from '../../services/supabase.service';
 import { NetworkService } from '../../services/network.service';
 import { StorageService } from '../../services/storage.service';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-ticket-list',
@@ -53,51 +53,155 @@ export class TicketListPage implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit() {
-    this.loadTickets();
-    this.initNetworkStatus();
+  async ngOnInit() {
+    // Zuerst Network-Status prüfen
+    await this.initNetworkStatus();
+    // Dann Tickets laden
+    await this.loadTickets();
+  }
+
+  // Wird jedes Mal aufgerufen, wenn die Seite betreten wird
+  async ionViewWillEnter() {
+    console.log('📋 Ticket-Liste: Lade Tickets neu...');
+    await this.loadTickets();
   }
 
   ngOnDestroy() {
     this.networkSubscription?.unsubscribe();
   }
 
-  initNetworkStatus() {
-    this.networkSubscription = this.networkService.getNetworkStatus().subscribe(isOnline => {
+  async initNetworkStatus() {
+    // Initialen Status sofort abrufen
+    try {
+      this.isOnline = await firstValueFrom(this.networkService.getNetworkStatus());
+    } catch (error) {
+      console.error('Error getting network status:', error);
+      this.isOnline = false; // Sicher ist sicher: Bei Fehler als offline behandeln
+    }
+    console.log('📡 Initial Network Status:', this.isOnline ? 'Online' : 'Offline');
+    
+    // Dann auf Änderungen lauschen
+    this.networkSubscription = this.networkService.getNetworkStatus().subscribe(async isOnline => {
+      const wasOffline = !this.isOnline;
       this.isOnline = isOnline;
-      if (isOnline) {
-        this.loadTickets();
+      console.log('📡 Network Status changed:', this.isOnline ? 'Online' : 'Offline');
+      
+      if (isOnline && wasOffline) {
+        // Von Offline zu Online gewechselt → ERST Synchronisieren, DANN laden
+        console.log('🔄 Wechsel zu Online - starte Synchronisierung');
+        await this.syncLocalTickets();
+        console.log('✅ Synchronisierung abgeschlossen - lade Tickets neu');
+        await this.loadTickets();
+      } else if (!isOnline && !wasOffline) {
+        // Von Online zu Offline gewechselt → Lade lokale Tickets
+        console.log('📴 Wechsel zu Offline - lade lokale Tickets');
+        await this.loadTickets();
       }
     });
+  }
+
+  async syncLocalTickets() {
+    try {
+      const localTickets = await this.storageService.getLocalTickets();
+      
+      if (localTickets.length === 0) {
+        console.log('ℹ️ Keine lokalen Tickets zum Synchronisieren');
+        return;
+      }
+      
+      console.log(`🔄 Synchronisiere ${localTickets.length} lokale Tickets...`);
+      let syncCount = 0;
+      
+      for (const ticket of localTickets) {
+        try {
+          // Entferne temp ID vor dem Upload
+          const ticketToUpload = { ...ticket };
+          delete ticketToUpload.id;
+          
+          // Upload zu Supabase
+          console.log(`📤 Uploading ticket: "${ticket.title}"`);
+          const uploadedTicket = await this.supabaseService.createTicket(ticketToUpload);
+          
+          if (uploadedTicket) {
+            // Erfolgreich hochgeladen → Lokal löschen
+            const key = ticket.id || `temp_${ticket.created_at}`;
+            await this.storageService.removeLocalTicket(key);
+            console.log(`✅ Ticket "${ticket.title}" synchronisiert und lokal gelöscht`);
+            syncCount++;
+          }
+        } catch (error) {
+          console.error(`❌ Fehler beim Synchronisieren von "${ticket.title}":`, error);
+        }
+      }
+      
+      if (syncCount > 0) {
+        this.showToast(`${syncCount} Offline-Ticket(s) synchronisiert`, 'success');
+      }
+      
+      console.log(`✅ Synchronisierung abgeschlossen: ${syncCount}/${localTickets.length} erfolgreich`);
+    } catch (error) {
+      console.error('❌ Error syncing local tickets:', error);
+    }
   }
 
   async loadTickets() {
     this.isLoading = true;
     try {
+      console.log(`📂 Lade Tickets... (${this.isOnline ? 'Online' : 'Offline'})`);
+      
       if (this.isOnline) {
-        // Online: Lade von Supabase
+        // Online: Nur von Supabase laden
+        console.log('☁️ Lade von Supabase...');
         this.allTickets = await this.supabaseService.getTickets();
+        console.log(`✅ ${this.allTickets.length} Tickets von Supabase geladen`);
       } else {
         // Offline: Lade lokal gespeicherte Tickets
+        console.log('💾 Lade lokale Tickets...');
         this.allTickets = await this.storageService.getLocalTickets();
+        console.log(`✅ ${this.allTickets.length} lokale Tickets geladen`, this.allTickets);
       }
+      
+      // Sortiere nach Datum
+      this.allTickets.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
+      
       this.filterTickets();
     } catch (error) {
-      console.error('Error loading tickets:', error);
+      console.error('❌ Error loading tickets:', error);
       this.showToast('Fehler beim Laden der Tickets', 'danger');
+      
+      // Fallback: Versuche lokale Tickets zu laden
+      try {
+        console.log('🔄 Fallback: Versuche lokale Tickets...');
+        this.allTickets = await this.storageService.getLocalTickets();
+        this.filterTickets();
+      } catch (fallbackError) {
+        console.error('❌ Auch lokale Tickets konnten nicht geladen werden:', fallbackError);
+      }
     } finally {
       this.isLoading = false;
     }
   }
 
   filterTickets() {
-    if (this.filterStatus === 'all') {
-      this.filteredTickets = [...this.allTickets];
-    } else {
-      this.filteredTickets = this.allTickets.filter(
-        ticket => ticket.status === this.filterStatus
-      );
-    }
+    // Erst nach Status filtern
+    let tickets = this.filterStatus === 'all' 
+      ? [...this.allTickets]
+      : this.allTickets.filter(ticket => ticket.status === this.filterStatus);
+    
+    // Dann nur valide Tickets anzeigen (müssen Titel und Beschreibung haben)
+    this.filteredTickets = tickets.filter(ticket => 
+      ticket && 
+      ticket.title && 
+      ticket.title.trim().length > 0 &&
+      ticket.description &&
+      ticket.description.trim().length > 0
+    );
+    
+    console.log(`🔍 Gefiltert: ${this.filteredTickets.length}/${tickets.length} valide Tickets`);
   }
 
   async refreshTickets() {

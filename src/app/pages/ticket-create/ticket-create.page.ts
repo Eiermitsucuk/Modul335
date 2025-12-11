@@ -11,9 +11,8 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  qrCode, locate, checkmarkCircle, warning, closeCircle, navigateCircle
+  locate, checkmarkCircle, warning, closeCircle, informationCircle
 } from 'ionicons/icons';
-import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { Ticket, TicketCategory, TicketStatus } from '../../models/ticket.model';
 import { SupabaseService } from '../../services/supabase.service';
 import { GeolocationService } from '../../services/geolocation.service';
@@ -57,7 +56,7 @@ export class TicketCreatePage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ qrCode, locate, checkmarkCircle, warning, closeCircle, navigateCircle });
+    addIcons({ locate, checkmarkCircle, warning, closeCircle, informationCircle });
   }
 
   ngOnInit() {
@@ -95,38 +94,14 @@ export class TicketCreatePage implements OnInit {
     }
   }
 
-  async scanQRCode() {
-    try {
-      // Berechtigung prüfen
-      const permission = await BarcodeScanner.checkPermissions();
-      if (permission.camera !== 'granted') {
-        const request = await BarcodeScanner.requestPermissions();
-        if (request.camera !== 'granted') {
-          this.showToast('Kamera-Berechtigung erforderlich', 'warning');
-          return;
-        }
-      }
-
-      // QR-Code scannen
-      const result = await BarcodeScanner.scan();
-      if (result.barcodes && result.barcodes.length > 0) {
-        this.ticket.location = result.barcodes[0].rawValue;
-        this.showToast('QR-Code erfolgreich gescannt', 'success');
-      }
-    } catch (error) {
-      console.error('QR-Code Scan Error:', error);
-      // Fallback: Manuelle Eingabe
-      const alert = await this.alertController.create({
-        header: 'QR-Code Scanner',
-        message: 'QR-Code Scanner nicht verfügbar. Bitte Standort manuell eingeben.',
-        buttons: ['OK']
-      });
-      await alert.present();
-    }
-  }
 
   isFormValid(): boolean {
-    return !!(this.ticket.title && this.ticket.description && this.ticket.category);
+    return !!(
+      this.ticket.title?.trim() && this.ticket.title.length >= 3 &&
+      this.ticket.description?.trim() && this.ticket.description.length >= 10 &&
+      this.ticket.category &&
+      this.ticket.location?.trim() && this.ticket.location.length >= 2
+    );
   }
 
   async submitTicket() {

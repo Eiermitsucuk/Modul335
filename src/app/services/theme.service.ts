@@ -46,7 +46,7 @@ export class ThemeService {
     if (this.darkMode) {
       // Use setTimeout to ensure DOM update
       setTimeout(() => {
-        document.body.classList.add('dark');
+      document.body.classList.add('dark');
         console.log('🎨 Dark mode enabled, body classes:', document.body.className);
       }, 0);
     } else {

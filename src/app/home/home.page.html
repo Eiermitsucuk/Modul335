@@ -6,7 +6,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">WorkFlow Assist</ion-title>
@@ -76,11 +76,11 @@
       <ion-card-title>Schnellaktionen</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-button expand="block" routerLink="/ticket-create">
+      <ion-button expand="block" class="custom-primary" routerLink="/ticket-create">
         <ion-icon slot="start" name="add-circle"></ion-icon>
         Neues Ticket erstellen
       </ion-button>
-      <ion-button expand="block" fill="outline" routerLink="/ticket-list">
+      <ion-button expand="block" fill="outline" class="custom-outline" routerLink="/ticket-list">
         <ion-icon slot="start" name="list"></ion-icon>
         Alle Tickets anzeigen
       </ion-button>

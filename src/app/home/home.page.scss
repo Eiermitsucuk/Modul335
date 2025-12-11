@@ -1,56 +1,215 @@
 .welcome-section {
   text-align: center;
-  margin: 20px 0;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #154360 0%, #60ce80 100%);
+  border-radius: 16px;
+  margin: 12px 8px;
+  color: white;
+  box-shadow: 0 3px 12px rgba(21, 67, 96, 0.25);
+
+  body.dark & {
+    background: linear-gradient(135deg, #0a1929 0%, #60ce80 100%);
+    box-shadow: 0 3px 12px rgba(96, 206, 128, 0.25);
+  }
 
   h2 {
-    font-size: 1.8em;
-    margin-bottom: 10px;
+    font-size: 1.6em;
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 
   p {
-    color: var(--ion-color-medium);
+    font-size: 0.9em;
+    opacity: 0.95;
+    line-height: 1.4;
   }
 }
 
 .stat-box {
   text-align: center;
-  padding: 10px;
+  padding: 16px 8px;
+  background: #ffffff;
+  border-radius: 12px;
+  margin: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #60ce80;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 12px rgba(96, 206, 128, 0.15);
+  }
+
+  body.dark & {
+    background: #1a2332;
+    border-color: transparent;
+    
+    &:hover {
+      border-color: #60ce80;
+      box-shadow: 0 3px 12px rgba(96, 206, 128, 0.25);
+    }
+  }
 
   h3 {
     font-size: 2em;
-    margin: 0;
-    font-weight: bold;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+    color: #154360;
+    
+    body.dark & {
+      color: #60ce80;
+    }
   }
 
   p {
-    margin: 5px 0 0 0;
-    color: var(--ion-color-medium);
-    font-size: 0.9em;
+    margin: 0;
+    font-size: 0.75em;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    
+    body.dark & {
+      color: #b0b0b0;
+    }
+  }
+}
+
+ion-grid {
+  padding: 0;
+  
+  ion-row {
+    padding: 0;
+  }
+  
+  ion-col {
+    padding: 2px;
   }
 }
 
 .status-open {
-  color: var(--ion-color-danger);
+  color: var(--ion-color-danger) !important;
 }
 
 .status-in-progress {
-  color: var(--ion-color-warning);
+  color: var(--ion-color-warning) !important;
 }
 
 ion-card {
-  margin: 15px 0;
+  margin: 12px 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  
+  body.dark & {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  
+  ion-card-header {
+    padding: 12px 16px;
+  }
+  
+  ion-card-content {
+    padding: 12px 16px 16px 16px;
+  }
 }
 
 ion-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 1.1em;
 
   ion-icon {
-    font-size: 1.3em;
+    font-size: 1.4em;
+    color: #154360;
+    
+    body.dark & {
+      color: #60ce80;
+    }
   }
 }
 
 ion-button {
-  margin-top: 10px;
+  margin-top: 12px;
+  height: 44px;
+  font-size: 0.95em;
+  
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item {
+  --background: transparent;
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --min-height: 56px;
+  margin: 8px 0;
+  transition: all 0.2s ease;
+  
+  &[button]:hover {
+    --background: #f0f0f0 !important;
+    
+    body.dark & {
+      --background: rgba(96, 206, 128, 0.08) !important;
+    }
+  }
+  
+  ion-icon {
+    font-size: 1.4em;
+  }
+  
+  ion-label {
+    h3 {
+      font-size: 0.95em;
+      font-weight: 600;
+    }
+    
+    p {
+      font-size: 0.8em;
+      margin-top: 4px;
+    }
+  }
+}
+
+ion-badge {
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75em;
+}
+
+/* Custom Primary Button */
+.custom-primary {
+  --background: #154360 !important;
+  --background-activated: #0f3548 !important;
+  --color: #ffffff !important;
+  
+  body.dark & {
+    --background: #60ce80 !important;
+    --background-activated: #54b571 !important;
+    --color: #000000 !important;
+  }
+}
+
+/* Custom Outline Button */
+.custom-outline {
+  --border-color: #154360 !important;
+  --color: #154360 !important;
+  --border-width: 2px !important;
+  font-weight: 600 !important;
+  
+  body.dark & {
+    --border-color: #60ce80 !important;
+    --color: #60ce80 !important;
+    --background: rgba(96, 206, 128, 0.1) !important;
+  }
 }
