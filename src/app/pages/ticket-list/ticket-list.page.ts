@@ -18,6 +18,7 @@ import { Ticket, TicketCategory, TicketStatus } from '../../models/ticket.model'
 import { SupabaseService } from '../../services/supabase.service';
 import { NetworkService } from '../../services/network.service';
 import { StorageService } from '../../services/storage.service';
+import { SyncService } from '../../services/sync.service';
 import { Subscription, firstValueFrom } from 'rxjs';
 
 @Component({
@@ -38,12 +39,14 @@ export class TicketListPage implements OnInit, OnDestroy {
   ticketStatus = TicketStatus;
   isLoading = true;
   isOnline = true;
+  private isSyncing = false;
   private networkSubscription?: Subscription;
 
   constructor(
     private supabaseService: SupabaseService,
     private networkService: NetworkService,
     private storageService: StorageService,
+    private syncService: SyncService,
     private alertController: AlertController,
     private toastController: ToastController
   ) {
@@ -63,7 +66,12 @@ export class TicketListPage implements OnInit, OnDestroy {
   // Wird jedes Mal aufgerufen, wenn die Seite betreten wird
   async ionViewWillEnter() {
     console.log('📋 Ticket-Liste: Lade Tickets neu...');
-    await this.loadTickets();
+    // Nicht laden, wenn gerade synchronisiert wird
+    if (!this.isSyncing) {
+      await this.loadTickets();
+    } else {
+      console.log('⏳ Sync läuft noch, überspringe ionViewWillEnter load');
+    }
   }
 
   ngOnDestroy() {
@@ -88,69 +96,45 @@ export class TicketListPage implements OnInit, OnDestroy {
       
       if (isOnline && wasOffline) {
         // Von Offline zu Online gewechselt → ERST Synchronisieren, DANN laden
-        console.log('🔄 Wechsel zu Online - starte Synchronisierung');
-        await this.syncLocalTickets();
-        console.log('✅ Synchronisierung abgeschlossen - lade Tickets neu');
-        await this.loadTickets();
+        console.log('🔄 Ticket-List: Wechsel zu Online - starte Synchronisierung');
+        this.isSyncing = true;
+        try {
+          const syncCount = await this.syncService.syncLocalTicketsToSupabase();
+          if (syncCount > 0) {
+            this.showToast(`${syncCount} Offline-Ticket(s) synchronisiert`, 'success');
+          }
+          console.log('✅ Ticket-List: Synchronisierung abgeschlossen - lade Tickets neu');
+          await this.loadTickets();
+        } finally {
+          this.isSyncing = false;
+        }
       } else if (!isOnline && !wasOffline) {
-        // Von Online zu Offline gewechselt → Lade lokale Tickets
-        console.log('📴 Wechsel zu Offline - lade lokale Tickets');
+        // Von Online zu Offline gewechselt → Speichere aktuelle Tickets lokal
+        console.log('📴 Ticket-List: Wechsel zu Offline - speichere aktuelle Tickets lokal');
+        try {
+          await this.syncService.saveTicketsForOffline();
+        } catch (error) {
+          console.error('❌ Fehler beim Speichern für Offline:', error);
+        }
         await this.loadTickets();
       }
     });
   }
 
-  async syncLocalTickets() {
-    try {
-      const localTickets = await this.storageService.getLocalTickets();
-      
-      if (localTickets.length === 0) {
-        console.log('ℹ️ Keine lokalen Tickets zum Synchronisieren');
-        return;
-      }
-      
-      console.log(`🔄 Synchronisiere ${localTickets.length} lokale Tickets...`);
-      let syncCount = 0;
-      
-      for (const ticket of localTickets) {
-        try {
-          // Entferne temp ID vor dem Upload
-          const ticketToUpload = { ...ticket };
-          delete ticketToUpload.id;
-          
-          // Upload zu Supabase
-          console.log(`📤 Uploading ticket: "${ticket.title}"`);
-          const uploadedTicket = await this.supabaseService.createTicket(ticketToUpload);
-          
-          if (uploadedTicket) {
-            // Erfolgreich hochgeladen → Lokal löschen
-            const key = ticket.id || `temp_${ticket.created_at}`;
-            await this.storageService.removeLocalTicket(key);
-            console.log(`✅ Ticket "${ticket.title}" synchronisiert und lokal gelöscht`);
-            syncCount++;
-          }
-        } catch (error) {
-          console.error(`❌ Fehler beim Synchronisieren von "${ticket.title}":`, error);
-        }
-      }
-      
-      if (syncCount > 0) {
-        this.showToast(`${syncCount} Offline-Ticket(s) synchronisiert`, 'success');
-      }
-      
-      console.log(`✅ Synchronisierung abgeschlossen: ${syncCount}/${localTickets.length} erfolgreich`);
-    } catch (error) {
-      console.error('❌ Error syncing local tickets:', error);
-    }
-  }
 
   async loadTickets() {
+    // Verhindere paralleles Laden während Sync
+    if (this.isSyncing) {
+      console.log('⏳ Sync läuft noch, überspringe loadTickets');
+      return;
+    }
+    
     this.isLoading = true;
     try {
       console.log(`📂 Lade Tickets... (${this.isOnline ? 'Online' : 'Offline'})`);
       
       if (this.isOnline) {
-        // Online: Nur von Supabase laden
+        // Online: Von Supabase laden (lokaler Speicher wird NICHT gelöscht)
         console.log('☁️ Lade von Supabase...');
         this.allTickets = await this.supabaseService.getTickets();
         console.log(`✅ ${this.allTickets.length} Tickets von Supabase geladen`);
@@ -222,14 +206,26 @@ export class TicketListPage implements OnInit, OnDestroy {
           text: 'Löschen',
           role: 'destructive',
           handler: async () => {
-            if (ticket.id) {
-              const success = await this.supabaseService.deleteTicket(ticket.id);
-              if (success) {
-                this.showToast('Ticket gelöscht', 'success');
-                await this.loadTickets();
+            try {
+              if (this.isOnline && ticket.id) {
+                // Online: Aus Supabase löschen
+                const success = await this.supabaseService.deleteTicket(ticket.id);
+                if (success) {
+                  this.showToast('Ticket gelöscht', 'success');
+                  await this.loadTickets();
+                } else {
+                  this.showToast('Fehler beim Löschen', 'danger');
+                }
               } else {
-                this.showToast('Fehler beim Löschen', 'danger');
+                // Offline: Nur lokal löschen
+                const key = ticket.id || `temp_${ticket.created_at}`;
+                await this.storageService.removeLocalTicket(key);
+                this.showToast('Ticket lokal gelöscht', 'success');
+                await this.loadTickets();
               }
+            } catch (error) {
+              console.error('Error deleting ticket:', error);
+              this.showToast('Fehler beim Löschen', 'danger');
             }
           }
         }

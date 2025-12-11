@@ -14,6 +14,7 @@ import {
 import { SupabaseService } from '../services/supabase.service';
 import { NetworkService } from '../services/network.service';
 import { StorageService } from '../services/storage.service';
+import { SyncService } from '../services/sync.service';
 import { Ticket, TicketCategory, TicketStatus } from '../models/ticket.model';
 import { Subscription } from 'rxjs';
 
@@ -36,12 +37,14 @@ export class HomePage implements OnInit, OnDestroy {
     open: 0,
     inProgress: 0
   };
+  private isSyncing = false;
   private networkSubscription?: Subscription;
 
   constructor(
     private supabaseService: SupabaseService,
     private networkService: NetworkService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private syncService: SyncService
   ) {
     addIcons({ 
       wifi, wifiOutline, statsChart, addCircle, list, construct, 
@@ -57,7 +60,12 @@ export class HomePage implements OnInit, OnDestroy {
   // Wird jedes Mal aufgerufen, wenn die Seite betreten wird
   async ionViewWillEnter() {
     console.log('🏠 Home-Page: Lade Daten neu...');
-    await this.loadData();
+    // Nicht laden, wenn gerade synchronisiert wird
+    if (!this.isSyncing) {
+      await this.loadData();
+    } else {
+      console.log('⏳ Sync läuft noch, überspringe ionViewWillEnter load');
+    }
   }
 
   ngOnDestroy() {
@@ -65,13 +73,19 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadData() {
+    // Verhindere paralleles Laden während Sync
+    if (this.isSyncing) {
+      console.log('⏳ Sync läuft noch, überspringe loadData');
+      return;
+    }
+    
     try {
       let tickets: Ticket[] = [];
       
       console.log(`📂 Home: Lade Tickets... (${this.isOnline ? 'Online' : 'Offline'})`);
       
       if (this.isOnline) {
-        // Online: Nur von Supabase laden
+        // Online: Von Supabase laden (lokaler Speicher wird NICHT gelöscht)
         tickets = await this.supabaseService.getTickets();
         console.log(`✅ Home: ${tickets.length} Tickets von Supabase geladen`);
       } else {
@@ -97,8 +111,8 @@ export class HomePage implements OnInit, OnDestroy {
         return dateB - dateA;
       });
       
-      this.recentTickets = tickets.slice(0, 5);
-      this.calculateStats(tickets);
+    this.recentTickets = tickets.slice(0, 5);
+    this.calculateStats(tickets);
     } catch (error) {
       console.error('Error loading data:', error);
       
@@ -125,12 +139,29 @@ export class HomePage implements OnInit, OnDestroy {
   async initNetworkStatus() {
     // Initial status prüfen
     this.networkSubscription = this.networkService.getNetworkStatus().subscribe(async isOnline => {
-      const wasOnline = this.isOnline;
+      const wasOffline = !this.isOnline;
       this.isOnline = isOnline;
       
-      // Wenn sich der Status ändert, Daten neu laden
-      if (wasOnline !== isOnline) {
-        console.log(`🔄 Home: Network Status changed to ${isOnline ? 'Online' : 'Offline'} - reload data`);
+      // Wenn sich der Status ändert
+      if (isOnline && wasOffline) {
+        // Von Offline zu Online: ERST Synchronisieren, DANN laden
+        console.log('🔄 Home: Wechsel zu Online - starte Synchronisierung');
+        this.isSyncing = true;
+        try {
+          await this.syncService.syncLocalTicketsToSupabase();
+          console.log('✅ Home: Synchronisierung abgeschlossen - lade Daten neu');
+          await this.loadData();
+        } finally {
+          this.isSyncing = false;
+        }
+      } else if (!isOnline && !wasOffline) {
+        // Von Online zu Offline: Speichere aktuelle Tickets lokal
+        console.log('📴 Home: Wechsel zu Offline - speichere aktuelle Tickets lokal');
+        try {
+          await this.syncService.saveTicketsForOffline();
+        } catch (error) {
+          console.error('❌ Fehler beim Speichern für Offline:', error);
+        }
         await this.loadData();
       }
     });
@@ -142,6 +173,7 @@ export class HomePage implements OnInit, OnDestroy {
     // Warte kurz, damit die Subscriptions sich initialisieren können
     await new Promise(resolve => setTimeout(resolve, 100));
   }
+
 
   getCategoryIcon(category: TicketCategory): string {
     switch (category) {

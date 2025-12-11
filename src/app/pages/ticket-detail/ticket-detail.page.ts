@@ -17,6 +17,8 @@ import {
 import { Ticket, TicketCategory, TicketStatus } from '../../models/ticket.model';
 import { SupabaseService } from '../../services/supabase.service';
 import { NotificationService } from '../../services/notification.service';
+import { StorageService } from '../../services/storage.service';
+import { NetworkService } from '../../services/network.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -33,6 +35,7 @@ export class TicketDetailPage implements OnInit {
   ticket: Ticket | null = null;
   ticketStatus = TicketStatus;
   isLoading = true;
+  isOnline = true;
   private ticketId: string = '';
 
   constructor(
@@ -40,6 +43,8 @@ export class TicketDetailPage implements OnInit {
     private router: Router,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
+    private storageService: StorageService,
+    private networkService: NetworkService,
     private alertController: AlertController,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController
@@ -50,9 +55,15 @@ export class TicketDetailPage implements OnInit {
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.ticketId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadTicket();
+    
+    // Network-Status prüfen
+    this.networkService.getNetworkStatus().subscribe(isOnline => {
+      this.isOnline = isOnline;
+    });
+    
+    await this.loadTicket();
   }
 
   async loadTicket() {
@@ -110,14 +121,26 @@ export class TicketDetailPage implements OnInit {
           text: 'Löschen',
           role: 'destructive',
           handler: async () => {
-            if (this.ticket?.id) {
-              const success = await this.supabaseService.deleteTicket(this.ticket.id);
-              if (success) {
-                this.showToast('Ticket gelöscht', 'success');
-                this.router.navigate(['/ticket-list']);
+            try {
+              if (this.isOnline && this.ticket?.id) {
+                // Online: Aus Supabase löschen
+                const success = await this.supabaseService.deleteTicket(this.ticket.id);
+                if (success) {
+                  this.showToast('Ticket gelöscht', 'success');
+                  this.router.navigate(['/ticket-list']);
+                } else {
+                  this.showToast('Fehler beim Löschen', 'danger');
+                }
               } else {
-                this.showToast('Fehler beim Löschen', 'danger');
+                // Offline: Nur lokal löschen
+                const key = this.ticket?.id || `temp_${this.ticket?.created_at}`;
+                await this.storageService.removeLocalTicket(key);
+                this.showToast('Ticket lokal gelöscht', 'success');
+                this.router.navigate(['/ticket-list']);
               }
+            } catch (error) {
+              console.error('Error deleting ticket:', error);
+              this.showToast('Fehler beim Löschen', 'danger');
             }
           }
         }
