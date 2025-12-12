@@ -7,7 +7,7 @@ import {
   IonButtons, IonItem, IonInput, IonSelect, IonSelectOption,
   IonTextarea, IonButton, IonIcon, IonCard, IonCardHeader,
   IonCardTitle, IonCardContent, IonNote, AlertController,
-  ToastController, LoadingController
+  ToastController, LoadingController, ViewWillEnter
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -31,7 +31,7 @@ import { NotificationService } from '../../services/notification.service';
     IonCardContent, IonNote
   ]
 })
-export class TicketCreatePage implements OnInit {
+export class TicketCreatePage implements OnInit, ViewWillEnter {
   ticket: Ticket = {
     title: '',
     description: '',
@@ -65,6 +65,11 @@ export class TicketCreatePage implements OnInit {
     });
   }
 
+  ionViewWillEnter() {
+    // Formular zurücksetzen, wenn die Seite betreten wird
+    this.resetForm();
+  }
+
   async getGPSLocation() {
     this.isGettingLocation = true;
     console.log('🎯 GPS button clicked');
@@ -75,10 +80,10 @@ export class TicketCreatePage implements OnInit {
       
       if (locationString && locationString !== 'Standort nicht verfügbar') {
         this.ticket.location = locationString;
-        this.showToast('✅ GPS-Standort erfasst', 'success');
+        this.showToast('GPS-Standort erfasst', 'success');
         console.log('✅ Location set to ticket:', this.ticket.location);
       } else {
-        this.showToast('⚠️ GPS-Standort konnte nicht ermittelt werden', 'warning');
+        this.showToast('GPS-Standort konnte nicht ermittelt werden', 'warning');
       }
     } catch (error: any) {
       console.error('❌ Error getting GPS location:', error);
@@ -104,6 +109,16 @@ export class TicketCreatePage implements OnInit {
     );
   }
 
+  resetForm() {
+    this.ticket = {
+      title: '',
+      description: '',
+      category: TicketCategory.TECHNIK,
+      status: TicketStatus.OFFEN,
+      location: ''
+    };
+  }
+
   async submitTicket() {
     if (!this.isFormValid()) {
       this.showToast('Bitte fülle alle Pflichtfelder aus', 'warning');
@@ -126,6 +141,7 @@ export class TicketCreatePage implements OnInit {
         if (savedTicket) {
           await this.notificationService.notifyTicketCreated(this.ticket.title);
           this.showToast('Ticket erfolgreich erstellt', 'success');
+          this.resetForm();
           this.router.navigate(['/ticket-list']);
         } else {
           throw new Error('Fehler beim Speichern');
@@ -134,6 +150,7 @@ export class TicketCreatePage implements OnInit {
         // Offline: Lokal speichern
         await this.storageService.saveTicketLocally(this.ticket);
         this.showToast('Ticket lokal gespeichert (wird später synchronisiert)', 'warning');
+        this.resetForm();
         this.router.navigate(['/ticket-list']);
       }
     } catch (error) {

@@ -69,24 +69,14 @@ export class SettingsPage implements OnInit {
   toggleDarkMode() {
     console.log('Toggle clicked, new value:', this.darkMode);
     this.themeService.setDarkMode(this.darkMode);
-    this.showToast(
-      this.darkMode ? 'Dark Mode aktiviert' : 'Dark Mode deaktiviert',
-      'success'
-    );
   }
 
   async toggleNotifications() {
     await this.storageService.setItem('notificationsEnabled', this.notificationsEnabled);
-    this.showToast(
-      this.notificationsEnabled 
-        ? 'Benachrichtigungen aktiviert' 
-        : 'Benachrichtigungen deaktiviert',
-      'success'
-    );
   }
 
   async testNotification() {
-    await this.notificationService.scheduleNotification(
+    await this.notificationService.scheduleTestNotification(
       'Test Benachrichtigung',
       'Dies ist eine Test-Benachrichtigung von WorkFlow Assist'
     );

@@ -124,13 +124,13 @@ export class TicketDetailPage implements OnInit {
             try {
               if (this.isOnline && this.ticket?.id) {
                 // Online: Aus Supabase löschen
-                const success = await this.supabaseService.deleteTicket(this.ticket.id);
-                if (success) {
-                  this.showToast('Ticket gelöscht', 'success');
-                  this.router.navigate(['/ticket-list']);
-                } else {
-                  this.showToast('Fehler beim Löschen', 'danger');
-                }
+              const success = await this.supabaseService.deleteTicket(this.ticket.id);
+              if (success) {
+                this.showToast('Ticket gelöscht', 'success');
+                this.router.navigate(['/ticket-list']);
+              } else {
+                this.showToast('Fehler beim Löschen', 'danger');
+              }
               } else {
                 // Offline: Nur lokal löschen
                 const key = this.ticket?.id || `temp_${this.ticket?.created_at}`;
