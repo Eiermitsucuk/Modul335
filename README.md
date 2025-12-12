@@ -25,35 +25,35 @@ App öffnet sich unter `http://localhost:8100`
 
 ---
 
-## 🎯 App-Features
+## App-Features
 
-### ✅ **Tickets verwalten**
+### **Tickets verwalten**
 - **Erstellen**: Titel, Beschreibung, Kategorie, Standort
 - **Ansehen**: Liste mit Filter (Alle, Offen, In Bearbeitung, Gelöst)
 - **Bearbeiten**: Status ändern (Offen → In Bearbeitung → Gelöst)
 - **Löschen**: Swipe-to-Delete in der Liste
 
-### 📍 **GPS-Standort**
+### **GPS-Standort**
 - Automatische GPS-Erfassung beim Ticket erstellen
 - Oder manuelle Eingabe (z.B. "Raum 201")
 - Standort wird mit Koordinaten gespeichert
 
-### 🌐 **Offline-Modus**
+### **Offline-Modus**
 - Tickets offline erstellen
 - Automatische Synchronisierung bei Online-Verbindung
 - Online/Offline Status wird angezeigt
 
-### 🔔 **Push-Benachrichtigungen**
+### **Push-Benachrichtigungen**
 - Bei Ticket-Erstellung
 - Bei Status-Änderung
 - Ein/Ausschalten in Einstellungen
 
-### 🌙 **Dark Mode**
+### **Dark Mode**
 - Manueller Umschalter in Einstellungen
 - Einstellung wird gespeichert
 - Alle Seiten passen sich automatisch an
 
-### 📊 **Dashboard**
+### **Dashboard**
 - Übersicht aller Tickets
 - Statistiken (Gesamt, Offen, In Bearbeitung, Gelöst)
 - Neueste Tickets
@@ -61,7 +61,7 @@ App öffnet sich unter `http://localhost:8100`
 
 ---
 
-## 🔧 Setup für Entwickler
+## Setup für Entwickler
 
 ### 1. Supabase einrichten
 
@@ -121,11 +121,11 @@ ionic cap sync android
 ionic cap open android
 ```
 
-In Android Studio auf ▶️ klicken zum Installieren auf Emulator/Gerät.
+In Android Studio auf klicken zum Installieren auf Emulator/Gerät.
 
 ---
 
-## 📦 APK erstellen
+## APK erstellen
 
 ### Schritt-für-Schritt:
 
@@ -160,7 +160,7 @@ cd android
 
 ---
 
-## 🛠️ Technologien
+## Technologien
 
 ### Frontend
 - **Ionic 8** - UI Framework
@@ -179,7 +179,7 @@ cd android
 
 ---
 
-## 📁 Projekt-Struktur
+## Projekt-Struktur
 
 ```
 smart-activity-logger/
@@ -208,7 +208,7 @@ smart-activity-logger/
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### App startet nicht
 
@@ -257,14 +257,14 @@ npx cap sync android
 
 ---
 
-## 📚 Weitere Dokumentation
+## Weitere Dokumentation
 
 - **DOKUMENTATION.md** - Vollständige Projektdokumentation (ÜK Modul 335)
 - **SUPABASE_SETUP.md** - Detaillierte Supabase-Einrichtung
 
 ---
 
-## 💡 Tipps
+## Tipps
 
 ### Schneller entwickeln
 
@@ -293,26 +293,6 @@ Folgende Features funktionieren **nur auf echtem Gerät oder Emulator**:
 
 ---
 
-## 📋 Checkliste für Abgabe
-
-- [ ] Supabase eingerichtet und getestet
-- [ ] App läuft im Browser (`ionic serve`)
-- [ ] App läuft auf Android-Gerät/Emulator
-- [ ] APK erfolgreich erstellt
-- [ ] Alle Features getestet:
-  - [ ] Ticket erstellen
-  - [ ] Ticket-Liste mit Filter
-  - [ ] Ticket-Details ansehen
-  - [ ] Status ändern
-  - [ ] Ticket löschen
-  - [ ] GPS-Standort
-  - [ ] Dark Mode
-  - [ ] Benachrichtigungen
-  - [ ] Offline-Modus
-- [ ] DOKUMENTATION.md ausgefüllt
-
----
-
 **App-Name:** WorkFlowAssist  
 **App-ID:** com.workflow.assist  
 **Version:** 1.0.0  
@@ -322,11 +302,10 @@ Folgende Features funktionieren **nur auf echtem Gerät oder Emulator**:
 
 ---
 
-## 🚀 Los geht's!
+## Los geht's!
 
 ```bash
 npm install
 ionic serve
 ```
 
-Viel Erfolg! 🎉
