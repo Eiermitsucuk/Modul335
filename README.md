@@ -1,4 +1,4 @@
-# WorkFlow Assist 📱
+# WorkFlowAssist 📱
 
 Mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Problemen.
 
@@ -313,7 +313,7 @@ Folgende Features funktionieren **nur auf echtem Gerät oder Emulator**:
 
 ---
 
-**App-Name:** WorkFlow Assist  
+**App-Name:** WorkFlowAssist  
 **App-ID:** com.workflow.assist  
 **Version:** 1.0.0  
 
