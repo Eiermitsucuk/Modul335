@@ -1,4 +1,4 @@
-# WorkFlowAssist 📱
+# WorkFlowAssist
 
 Mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Problemen.
 
@@ -8,7 +8,7 @@ Mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Problemen.
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 # 1. Dependencies installieren
