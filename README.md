@@ -1,6 +1,6 @@
 # WorkFlow Assist 📱
 
-Eine mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Problemen.
+Mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Problemen.
 
 ![Ionic](https://img.shields.io/badge/Ionic-8.0-blue)
 ![Angular](https://img.shields.io/badge/Angular-20-red)
@@ -8,355 +8,325 @@ Eine mobile App zur schnellen Erfassung und Verwaltung von Arbeitsplatz-Probleme
 
 ---
 
-## 🚀 Quick Start
-
-### Installation
+## ⚡ Quick Start
 
 ```bash
-# Dependencies installieren
+# 1. Dependencies installieren
 npm install
 
-# App im Browser starten
+# 2. Supabase konfigurieren (siehe unten)
+# Trage deine Keys in src/environments/environment.ts ein
+
+# 3. App im Browser starten
 ionic serve
 ```
 
-Die App öffnet sich automatisch im Browser unter `http://localhost:8100`
+App öffnet sich unter `http://localhost:8100`
 
 ---
 
-## 📖 Wie benutzt man die App?
+## 🎯 App-Features
 
-### 1. Erstes Ticket erstellen
+### ✅ **Tickets verwalten**
+- **Erstellen**: Titel, Beschreibung, Kategorie, Standort
+- **Ansehen**: Liste mit Filter (Alle, Offen, In Bearbeitung, Gelöst)
+- **Bearbeiten**: Status ändern (Offen → In Bearbeitung → Gelöst)
+- **Löschen**: Swipe-to-Delete in der Liste
 
-1. Öffne die App
-2. Tippe auf den **"Erstellen"** Tab (➕ Icon)
-3. Fülle das Formular aus:
-   - **Titel**: z.B. "Monitor zeigt kein Bild"
-   - **Kategorie**: Wähle "Technik"
-   - **Beschreibung**: Beschreibe das Problem
-   - **Standort** (optional): z.B. "Raum 201"
-   - **Foto** (optional): Nimm ein Foto auf
-4. Tippe auf **"Ticket erstellen"**
+### 📍 **GPS-Standort**
+- Automatische GPS-Erfassung beim Ticket erstellen
+- Oder manuelle Eingabe (z.B. "Raum 201")
+- Standort wird mit Koordinaten gespeichert
 
-✅ Dein Ticket ist jetzt gespeichert!
+### 🌐 **Offline-Modus**
+- Tickets offline erstellen
+- Automatische Synchronisierung bei Online-Verbindung
+- Online/Offline Status wird angezeigt
 
-### 2. Tickets ansehen
+### 🔔 **Push-Benachrichtigungen**
+- Bei Ticket-Erstellung
+- Bei Status-Änderung
+- Ein/Ausschalten in Einstellungen
 
-1. Öffne den **"Tickets"** Tab (📋 Icon)
-2. Hier siehst du alle deine Tickets
-3. **Filtern**: Tippe oben auf "Offen", "In Bearbeitung" oder "Gelöst"
-4. **Details ansehen**: Tippe auf ein Ticket
-5. **Löschen**: Swipe nach links auf einem Ticket
+### 🌙 **Dark Mode**
+- Manueller Umschalter in Einstellungen
+- Einstellung wird gespeichert
+- Alle Seiten passen sich automatisch an
 
-### 3. Ticket-Status ändern
-
-1. Öffne ein Ticket in der Detail-Ansicht
-2. Scrolle nach unten zu "Status ändern"
-3. Tippe auf den gewünschten Status:
-   - **Offen** (rot)
-   - **In Bearbeitung** (orange)
-   - **Gelöst** (grün)
-4. Status wird automatisch gespeichert
-
-💡 Du erhältst eine Push-Benachrichtigung bei Statusänderungen!
-
-### 4. Foto hinzufügen
-
-Beim Ticket erstellen:
-
-1. Scrolle zu "Foto (optional)"
-2. Wähle eine Option:
-   - **📷 Foto aufnehmen**: Öffnet die Kamera
-   - **🖼️ Aus Galerie wählen**: Öffnet die Galerie
-3. Das Foto wird hochgeladen
-4. Im Ticket-Detail wird das Foto angezeigt
-
-### 5. QR-Code scannen
-
-Für schnelle Standort-Erfassung:
-
-1. Beim Ticket erstellen
-2. Neben "Standort" auf das **QR-Code Icon** tippen
-3. Scanner öffnet sich
-4. QR-Code scannen
-5. Standort wird automatisch eingetragen
-
-📱 **Hinweis**: QR-Scanner funktioniert nur auf echtem Gerät!
-
-### 6. Dark Mode aktivieren
-
-1. Öffne **"Einstellungen"** Tab (⚙️ Icon)
-2. Unter "Darstellung"
-3. Schalte **"Dark Mode"** um
-4. Die ganze App wird dunkel! 🌙
-
-Die Einstellung wird gespeichert.
-
-### 7. Offline arbeiten
-
-Die App funktioniert auch **ohne Internet**:
-
-1. Im **Home** Tab siehst du den Verbindungsstatus
-2. Bei **Offline**:
-   - Tickets werden lokal gespeichert
-   - Du siehst einen Hinweis beim Erstellen
-   - Bei **Online** wieder: Tickets synchronisieren
+### 📊 **Dashboard**
+- Übersicht aller Tickets
+- Statistiken (Gesamt, Offen, In Bearbeitung, Gelöst)
+- Neueste Tickets
+- Schnellzugriff zu wichtigen Funktionen
 
 ---
 
-## 🔧 Für Entwickler
+## 🔧 Setup für Entwickler
 
-### Projekt-Setup
+### 1. Supabase einrichten
+
+Erstelle ein kostenloses Supabase-Projekt: https://supabase.com
+
+```sql
+-- SQL-Tabelle erstellen in Supabase SQL Editor
+CREATE TABLE tickets (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'Offen',
+  location TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Row Level Security aktivieren
+ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all access" ON tickets FOR ALL USING (true);
+```
+
+Trage deine Keys ein in `src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  supabase: {
+    url: 'DEINE_SUPABASE_URL',
+    key: 'DEIN_SUPABASE_ANON_KEY'
+  }
+};
+```
+
+Mehr Details: siehe `SUPABASE_SETUP.md`
+
+### 2. Development-Server
 
 ```bash
-# Dependencies installieren
-npm install
-
-# Supabase konfigurieren
-# 1. Öffne src/environments/environment.ts
-# 2. Trage deine Supabase URL und Key ein
-# 3. Siehe SUPABASE_SETUP.md für Details
-
-# Development-Server starten
 ionic serve
 ```
 
-### Auf Android testen
+### 3. Auf Android testen
 
 ```bash
 # Production Build
-npm run build
+ionic build --prod
 
-# Android-Plattform hinzufügen (einmalig)
+# Android Platform hinzufügen (nur einmal)
 ionic cap add android
 
-# Sync (nach jedem Build)
-ionic cap sync android
-
-# In Android Studio öffnen
-ionic cap open android
-```
-
-In Android Studio:
-1. Emulator oder Gerät auswählen
-2. Auf ▶️ klicken
-3. App wird installiert und gestartet
-
-### APK erstellen
-
-```bash
-# Production Build
-npm run build --prod
+# Nach jedem Build: Sync
 ionic cap sync android
 
 # Android Studio öffnen
 ionic cap open android
 ```
 
-In Android Studio:
-1. **Build → Build Bundle(s) / APK(s) → Build APK(s)**
-2. Warte bis Build fertig
-3. APK liegt in: `android/app/build/outputs/apk/debug/app-debug.apk`
+In Android Studio auf ▶️ klicken zum Installieren auf Emulator/Gerät.
 
 ---
 
-## 📱 Features im Detail
+## 📦 APK erstellen
 
-### Home Dashboard
+### Schritt-für-Schritt:
 
-- **Netzwerk-Status**: Zeigt Online/Offline an
-- **Statistiken**: Übersicht aller Tickets
-- **Schnellaktionen**: Direkt neues Ticket oder Liste öffnen
-- **Neueste Tickets**: Die letzten 5 Tickets
+```bash
+# 1. Production Build erstellen
+ionic build --prod
 
-### Ticket-Liste
+# 2. Nach Android kopieren
+npx cap sync android
 
-- **Filter**: Nach Status filtern
-- **Swipe-to-Delete**: Nach links wischen zum Löschen
-- **Pull-to-Refresh**: Nach unten ziehen zum Aktualisieren
-- **FAB**: Floating Button für neues Ticket
+# 3. Android Studio öffnen
+npx cap open android
+```
 
-### Ticket-Detail
+### In Android Studio:
 
-- **Vollständige Info**: Alle Details auf einen Blick
-- **Status ändern**: Direkt im Detail
-- **Foto anzeigen**: Hochgeladene Fotos
-- **Teilen**: Ticket-Info teilen (Web Share API)
-- **Löschen**: Mit Bestätigung
+**Für Debug-APK (zum Testen):**
+- Build → Build Bundle(s) / APK(s) → **Build APK(s)**
+- APK liegt in: `android/app/build/outputs/apk/debug/app-debug.apk`
 
-### Einstellungen
+**Für Release-APK (Production):**
+- Build → Build Bundle(s) / APK(s) → **Build APK(s)**
+- Wähle "release" Build Variant (links in "Build Variants" Panel)
+- APK liegt in: `android/app/build/outputs/apk/release/app-release.apk`
 
-- **Dark Mode**: Hell/Dunkel umschalten
-- **Benachrichtigungen**: Test-Benachrichtigung senden
-- **Netzwerk-Info**: Status und Typ
-- **Statistiken**: Ticket-Übersicht
-- **Speicher**: Lokalen Cache leeren
+**Oder via Command Line:**
+```bash
+cd android
+./gradlew assembleDebug    # Debug-APK
+./gradlew assembleRelease  # Release-APK
+```
 
 ---
 
-## 🛠️ Verwendete Technologien
+## 🛠️ Technologien
 
 ### Frontend
-- **Ionic 8** - UI Components
-- **Angular 20** - Framework
-- **TypeScript** - Programmiersprache
-- **SCSS** - Styling
+- **Ionic 8** - UI Framework
+- **Angular 20** - TypeScript Framework
+- **Capacitor 7.4** - Native Runtime
 
 ### Backend
 - **Supabase** - Database as a Service
 - **PostgreSQL** - Datenbank
-- **Supabase Storage** - Datei-Speicherung
 
-### Mobile
-- **Capacitor 7** - Native Runtime
-- **Camera Plugin** - Fotos aufnehmen
-- **Barcode Scanner** - QR-Codes scannen
-- **Local Notifications** - Push-Benachrichtigungen
-- **Network Plugin** - Online/Offline Detection
-- **localforage** - Lokaler Speicher
+### Capacitor Plugins
+- `@capacitor/geolocation` - GPS-Standort
+- `@capacitor/local-notifications` - Push-Benachrichtigungen
+- `@capacitor/network` - Online/Offline Detection
+- `localforage` - Lokaler Speicher
 
 ---
 
 ## 📁 Projekt-Struktur
 
 ```
-src/app/
-├── models/              # TypeScript Interfaces
-│   └── ticket.model.ts
-├── services/            # Business Logic
-│   ├── supabase.service.ts      # CRUD + Cloud
-│   ├── camera.service.ts        # Kamera
-│   ├── storage.service.ts       # Lokaler Speicher
-│   ├── network.service.ts       # Netzwerk
-│   ├── notification.service.ts  # Benachrichtigungen
-│   └── theme.service.ts         # Dark Mode
-├── pages/               # App-Seiten
-│   ├── ticket-create/
-│   ├── ticket-list/
-│   ├── ticket-detail/
-│   └── settings/
-├── home/                # Dashboard
-└── tabs/                # Navigation
+smart-activity-logger/
+├── src/app/
+│   ├── models/              # TypeScript Interfaces
+│   │   └── ticket.model.ts
+│   ├── services/            # Business Logic
+│   │   ├── supabase.service.ts      # CRUD Operations
+│   │   ├── geolocation.service.ts   # GPS
+│   │   ├── storage.service.ts       # Lokaler Speicher
+│   │   ├── network.service.ts       # Online/Offline
+│   │   ├── notification.service.ts  # Push-Benachrichtigungen
+│   │   └── theme.service.ts         # Dark Mode
+│   ├── pages/               # App-Seiten
+│   │   ├── ticket-create/   # Ticket erstellen
+│   │   ├── ticket-list/     # Ticket-Liste
+│   │   ├── ticket-detail/   # Ticket-Details
+│   │   └── settings/        # Einstellungen
+│   ├── home/                # Dashboard
+│   └── tabs/                # Tab-Navigation
+├── android/                 # Android-Projekt (für APK)
+├── www/                     # Kompilierte Web-App
+├── resources/               # Icon & Splash Screen
+└── DOKUMENTATION.md         # Vollständige Projektdokumentation
 ```
-
----
-
-## 🎨 Theming anpassen
-
-Farben ändern in `src/theme/variables.scss`:
-
-```scss
-:root {
-  --ion-color-primary: #3880ff;    // Hauptfarbe
-  --ion-color-success: #2dd36f;    // Erfolg (grün)
-  --ion-color-warning: #ffc409;    // Warnung (orange)
-  --ion-color-danger: #eb445a;     // Fehler (rot)
-}
-```
-
-Dark Mode Farben auch in `variables.scss` unter `body.dark { ... }`
 
 ---
 
 ## 🐛 Troubleshooting
 
-### App startet nicht im Browser
+### App startet nicht
 
 ```bash
-# Cache löschen
+# Cache löschen und neu installieren
 rm -rf node_modules package-lock.json
 npm install
 ionic serve
 ```
 
-### Supabase-Fehler
+### Supabase-Fehler: "Invalid API key"
 
 - Überprüfe `src/environments/environment.ts`
 - Sind URL und Key korrekt?
-- Siehe `SUPABASE_SETUP.md` für Setup
+- Verwende den **anon/public** Key, nicht den Service Key
 
-### Kamera funktioniert nicht
+### GPS funktioniert nicht
 
-- Im Browser: Kamera geht nicht, nur auf echtem Gerät
-- Auf Gerät: Berechtigungen erlauben
+- Im Browser: GPS geht nur mit HTTPS oder localhost
+- Auf Gerät: GPS-Berechtigung erteilen
+- Im Emulator: "Extended Controls" → Location → GPS-Koordinaten setzen
 
-### QR-Scanner funktioniert nicht
+### Push-Benachrichtigungen gehen nicht
 
-- Nur auf echtem Gerät verfügbar
-- Im Browser: Manuelle Standort-Eingabe nutzen
+- Im Browser: Nicht verfügbar
+- Auf echtem Gerät: Berechtigung erteilen
+- In Einstellungen: Benachrichtigungen aktivieren
 
-### Dark Mode bleibt immer dunkel
+### Dark Mode funktioniert nicht
 
-- Hard Refresh: `Cmd/Ctrl + Shift + R`
-- Cache leeren im Browser
-- In Settings Dark Mode aus/ein schalten
+- Hard Refresh im Browser: `Cmd/Ctrl + Shift + R`
+- In Settings aus- und wieder einschalten
+
+### Android Build schlägt fehl
+
+```bash
+# Gradle Cache löschen
+cd android
+./gradlew clean
+
+# Neu bauen
+cd ..
+ionic build --prod
+npx cap sync android
+```
 
 ---
 
 ## 📚 Weitere Dokumentation
 
-- **DOKUMENTATION.md** - Vollständige Projektdokumentation (für Abgabe)
-- **SUPABASE_SETUP.md** - Schritt-für-Schritt Supabase Einrichtung
+- **DOKUMENTATION.md** - Vollständige Projektdokumentation (ÜK Modul 335)
+- **SUPABASE_SETUP.md** - Detaillierte Supabase-Einrichtung
 
 ---
 
-## 💡 Tipps & Tricks
+## 💡 Tipps
 
 ### Schneller entwickeln
 
 ```bash
-# Browser öffnet automatisch
+# Mit automatischem Browser-Öffnen
 ionic serve --open
 
-# Auf bestimmtem Port
+# Auf anderem Port
 ionic serve --port 8200
-
-# Mit Labs (experimentelle Features)
-ionic serve --lab
 ```
 
-### Device Features testen
+### Native Features testen
 
-Kamera, QR-Scanner, Push-Benachrichtigungen funktionieren nur auf:
-- Echtem Android/iOS Gerät
-- Android Emulator mit Kamera
-- iOS Simulator (eingeschränkt)
+Folgende Features funktionieren **nur auf echtem Gerät oder Emulator**:
+- GPS-Standort
+- Push-Benachrichtigungen
+- Kamera (falls implementiert)
 
-**Nicht im Browser!**
+**Nicht im Browser verfügbar!**
 
 ### Performance
 
-- Bilder: Maximal 1024x1024px
-- Offline-Modus nutzen für schnellere Bedienung
+- Offline-Modus für schnellere Bedienung nutzen
 - Dark Mode spart Akku (OLED-Displays)
+- Regelmäßig Tickets löschen für bessere Performance
 
 ---
 
-## 🤝 Support
+## 📋 Checkliste für Abgabe
 
-Bei Problemen:
-
-1. Siehe Troubleshooting oben
-2. Supabase-Setup überprüfen
-3. Console-Logs prüfen (F12 im Browser)
-4. Google nach spezifischer Fehlermeldung
-
----
-
-## ⚡ Shortcuts
-
-| Aktion | Shortcut |
-|--------|----------|
-| Neues Ticket | FAB-Button in Ticket-Liste |
-| Zurück | Back-Button oder Swipe-Geste |
-| Ticket löschen | Swipe nach links |
-| Aktualisieren | Pull-to-Refresh |
-| Dark Mode | Settings → Toggle |
+- [ ] Supabase eingerichtet und getestet
+- [ ] App läuft im Browser (`ionic serve`)
+- [ ] App läuft auf Android-Gerät/Emulator
+- [ ] APK erfolgreich erstellt
+- [ ] Alle Features getestet:
+  - [ ] Ticket erstellen
+  - [ ] Ticket-Liste mit Filter
+  - [ ] Ticket-Details ansehen
+  - [ ] Status ändern
+  - [ ] Ticket löschen
+  - [ ] GPS-Standort
+  - [ ] Dark Mode
+  - [ ] Benachrichtigungen
+  - [ ] Offline-Modus
+- [ ] DOKUMENTATION.md ausgefüllt
 
 ---
 
+**App-Name:** WorkFlow Assist  
+**App-ID:** com.workflow.assist  
 **Version:** 1.0.0  
-**Entwickelt mit:** Ionic 8 + Angular 20 + Capacitor 7  
-**ÜK Modul 335** - Dezember 2025
 
-🚀 Viel Erfolg mit WorkFlow Assist!
+**ÜK Modul 335** - Mobile-Applikation mit Ionic Framework  
+**Dezember 2025**
+
+---
+
+## 🚀 Los geht's!
+
+```bash
+npm install
+ionic serve
+```
+
+Viel Erfolg! 🎉
